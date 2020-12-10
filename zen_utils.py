@@ -28,6 +28,7 @@ def create_srv_socket(address):
     """Build and return a listening server socket."""
     listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    #set_keepalive_osx(listener)
     listener.bind(address)
     listener.listen(64)
     print('Listening at {}'.format(address))
@@ -54,18 +55,40 @@ def handle_conversation(sock, address):
 
 def handle_request(sock):
     """Receive a single client request on `sock` and send the answer."""
-    aphorism = recv_until(sock, b'?')
-    answer = get_answer(aphorism)
-    sock.sendall(answer)
+    msg = recv_until(sock)
+    sock.sendall(msg)
 
-def recv_until(sock, suffix):
+def recv_until(sock):
     """Receive bytes over socket `sock` until we receive the `suffix`."""
     message = sock.recv(4096)
     if not message:
         raise EOFError('socket closed')
-    while not message.endswith(suffix):
+
+    while not message.endswith(b'\n'):
         data = sock.recv(4096)
         if not data:
             raise IOError('received {!r} then socket closed'.format(message))
         message += data
     return message
+
+def set_keepalive_linux(sock, after_idle_sec=1, interval_sec=3, max_fails=5):
+    """Set TCP keepalive on an open socket.
+
+    It activates after 1 second (after_idle_sec) of idleness,
+    then sends a keepalive ping once every 3 seconds (interval_sec),
+    and closes the connection after 5 failed ping (max_fails), or 15 seconds
+    """
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+    sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, after_idle_sec)
+    sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, interval_sec)
+    sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPCNT, max_fails)
+
+def set_keepalive_osx(sock, after_idle_sec=1, interval_sec=3, max_fails=5):
+    """Set TCP keepalive on an open socket.
+
+    sends a keepalive ping once every 3 seconds (interval_sec)
+    """
+    # scraped from /usr/include, not exported by python's socket module
+    TCP_KEEPALIVE = 0x10
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+    sock.setsockopt(socket.IPPROTO_TCP, TCP_KEEPALIVE, interval_sec)
