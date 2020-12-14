@@ -4,8 +4,8 @@ import zen_utils
 from threading import Thread
 
 def start_threads(listener, worker=4):
-    t - (listener,)
-    for in in range(worker):
+    t = (listener,)
+    for i in range(worker):
         Thread(target=zen_utils.accept_connections_forever, args=t).start()
 
 if __name__ == '__main__':
