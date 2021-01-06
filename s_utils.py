@@ -62,8 +62,11 @@ def handle_request(sock, address):
     """Receive a single client request on `sock` and send the answer."""
     #todo: @decorator receber como argumento a funcao, que vai tratar o retorno,
     message = recv_until(sock)
+    print("handle_request > msg recebida: ",message)
     push_domain(message,address,sock)
-    sock.sendall(b'MENSAGEM ENVIARA - SUCESSO' )
+    sock.sendall(message) #retorna o retorno hahaha
+    #sock.sendall(b'MENSAGEM ENVIADA - SUCESSO' )
+    #sock.sendall(b'\x00\x07\x07')
 
 def recv_until(sock):
     """Receive bytes over socket `sock` until we receive the `suffix`."""
