@@ -2,7 +2,7 @@
 # Simple client that connect server, asks three questions then disconnects.
 # receive paramms either line command or python shell
 
-import argparse, random, socket, zen_utils, time, sys
+import argparse, random, socket, s_utils, time, sys
 
 
 def transmit(sock,message):
@@ -11,7 +11,7 @@ def transmit(sock,message):
     print('mensagem recebida : ',zen_utils.recv_until(sock))
 
 def main():
-    sock = zen_utils.create_cli_connection(address)
+    sock = s_utils.create_cli_connection(address)
     msg = (b"teste")
     transmit(sock,msg)
     zen_utils.close_connection(sock)
