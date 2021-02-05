@@ -27,7 +27,8 @@ def create_cli_connection(address):
     """ create socket and connect server at address """
     sock = create_socket()
     sock.connect(address)
-    print('connected at {}'.format(sock.getpeername()))
+    print(">> create_cli_connection >> ")
+    print('>> create_cli_connection >> connected at {}'.format(sock.getpeername()))
     return sock
 
 def create_srv_socket(address):
@@ -36,14 +37,16 @@ def create_srv_socket(address):
     listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     listener.bind(address)
     listener.listen(64)
-    print('Listening at {}'.format(address))
+    print(">> create_srv_socket >> ")
+    print('>> create_srv_socket >> Listening at {}'.format(address))
     return listener
 
 def accept_connections_forever(listener):
     """Forever answer incoming connections on a listening socket."""
     while True:
         sock, address = listener.accept()
-        print('Accepted connection from {}'.format(address))
+        print(">> accept_connection_forever >> ")
+        print('>> accept_connection_forever >> Accepted connection from {}'.format(address))
         handle_conversation(sock, address)
 
 def handle_conversation(sock, address):
@@ -52,9 +55,10 @@ def handle_conversation(sock, address):
         while True:
             handle_request(sock, address)
     except EOFError:
-        print('Client socket to {} has closed'.format(address))
+        print(">> handle_conversation >> ")
+        print('>> handle_conversation >> Client socket to {} has closed'.format(address))
     except Exception as e:
-        print('Client {} error: {}'.format(address, e))
+        print('>> handle_conversation >> Client {} error: {}'.format(address, e))
     finally:
         sock.close()
 
@@ -62,8 +66,13 @@ def handle_request(sock, address):
     """Receive a single client request on `sock` and send the answer."""
     #todo: @decorator receber como argumento a funcao, que vai tratar o retorno,
     message = recv_until(sock)
-    print("handle_request > msg recebida: ",message)
-    push_domain(message,address,sock)
+    print(">> handle_request >> msg recebida: ",message)
+    resposta = push_domain(message,address,sock)
+    print("Resposta do servidor", resposta)
+    if resposta.status_code == 200:
+        message  = b'\x00\x00\x00\x00\x00\x00\x00\x19'
+    else:
+        message = b'\x00\x00\x00\x00\x00\x00\x00\x1a'
     sock.sendall(message) #retorna o retorno hahaha
     #sock.sendall(b'MENSAGEM ENVIADA - SUCESSO' )
     #sock.sendall(b'\x00\x07\x07')
@@ -74,7 +83,6 @@ def recv_until(sock):
     if not message:
         raise EOFError('socket closed')
 
-#TODO: how to do to keep connetio until get warning for close,
 #TODO: tips, use flag variable to keet conection
 
     # while not message.endswith(b'\n'):
@@ -85,7 +93,7 @@ def recv_until(sock):
     return message
 
 def push_domain(message,address,sock):
-    broker.post_to_controler(message,address,sock)
+    return broker.post_to_controler(message,address,sock)
 
 def close_connection(sock):
     sock.close()
