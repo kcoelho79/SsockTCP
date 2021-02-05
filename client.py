@@ -8,13 +8,13 @@ import argparse, random, socket, s_utils, time, sys
 def transmit(sock,message):
     sock.sendall(message)
     sys.stdout.flush()
-    print('mensagem recebida : ',zen_utils.recv_until(sock))
+    print('mensagem recebida : ',s_utils.recv_until(sock))
 
 def main():
     sock = s_utils.create_cli_connection(address)
     msg = (b"teste")
     transmit(sock,msg)
-    zen_utils.close_connection(sock)
+    s_utils.close_connection(sock)
 
 if __name__ == '__main__':
 
