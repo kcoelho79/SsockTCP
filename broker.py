@@ -24,9 +24,9 @@ def append_host_to(message,address):
 
 def post_to_controler(message,address,sock):
     message = append_host_to(message,address)
-    URL = "http://127.0.0.1:8000/evento"
+    #URL = "http://127.0.0.1:8000/evento"
     print('>> post_to_controler >> mensagem para post: ',message)
-    #URL = "http://test.gokey.com.br/evento"
+    URL = "http://test.gokey.com.br/evento"
     headers = {'content-type': 'application/json'}
     r = requests.post(URL, data=message, headers=headers)
     return r
